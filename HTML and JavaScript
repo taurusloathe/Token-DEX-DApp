@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPYDR Token DApp</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.3.0/dist/web3.min.js"></script>
+    <style>
+        body {
+            background-color: black;
+            color: yellow;
+            text-align: center;
+            padding: 50px;
+        }
+
+        h1 {
+            font-weight: bold;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input {
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+
+        button {
+            padding: 8px;
+            background-color: #4CAF50; /* Green */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px; /* Adjust the margin as needed */
+        }
+
+        #walletStatus {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>SPYDR Token DApp</h1>
+
+    <label for="buyAmount">Enter amount to buy:</label>
+    <input type="number" id="buyAmount" placeholder="Amount">
+    <button onclick="buyTokens()">Buy SPYDR Tokens</button>
+
+    <hr>
+
+    <label for="sellAmount">Enter amount to sell:</label>
+    <input type="number" id="sellAmount" placeholder="Amount">
+    <button onclick="sellTokens()">Sell SPYDR Tokens</button>
+
+    <!-- Connect Wallet Button -->
+    <button onclick="connectWallet()">Connect Wallet</button>
+    <p id="walletStatus"></p>
+
+    <!-- Add the image tag below -->
+    <img src="path/to/your/image.png" alt="Description of the image">
+
+    <script>
+        const contractAddress = 'YourContractAddress';
+        const contractABI = [/* Your contract ABI here */];
+
+        const web3 = new Web3(Web3.givenProvider);
+        const spydrContract = new web3.eth.Contract(contractABI, contractAddress);
+
+        async function buyTokens() {
+            const account = await getAccount();
+            const buyAmount = document.getElementById('buyAmount').value;
+
+            spydrContract.methods.buyMyCoins(buyAmount).send({
+                from: account,
+                value: web3.utils.toWei(buyAmount, 'ether'),
+            }).on('transactionHash', (hash) => {
+                console.log('Transaction Hash:', hash);
+            }).on('confirmation', (confirmationNumber, receipt) => {
+                console.log('Confirmation Number:', confirmationNumber);
+                console.log('Receipt:', receipt);
+            }).on('error', (error) => {
+                console.error('Error:', error.message);
+            });
+        }
+
+        async function sellTokens() {
+            const account = await getAccount();
+            const sellAmount = document.getElementById('sellAmount').value;
+
+            spydrContract.methods.sellMyCoins(sellAmount).send({
+                from: account,
+            }).on('transactionHash', (hash) => {
+                console.log('Transaction Hash:', hash);
+            }).on('confirmation', (confirmationNumber, receipt) => {
+                console.log('Confirmation Number:', confirmationNumber);
+                console.log('Receipt:', receipt);
+            }).on('error', (error) => {
+                console.error('Error:', error.message);
+            });
+        }
+
+        async function connectWallet() {
+            try {
+                // Requesting user's permission to connect their wallet
+                const accounts = await web3.eth.requestAccounts();
+                const account = accounts[0];
+                
+                document.getElementById('walletStatus').innerText = `Connected to: ${account}`;
+            } catch (error) {
+                console.error('Error connecting wallet:', error.message);
+                document.getElementById('walletStatus').innerText = 'Wallet connection failed.';
+            }
+        }
+
+        async function getAccount() {
+            const accounts = await web3.eth.getAccounts();
+            if (accounts.length === 0) {
+                throw new Error('No account connected. Please connect your wallet.');
+            }
+            return accounts[0];
+        }
+    </script>
+</body>
+</html>
